@@ -82,13 +82,15 @@
     </div>
 
     <script>
+        const API_BASE_URL = 'http://95.217.157.157:8080';
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const phone = document.getElementById('phone').value.trim();
             const password = document.getElementById('password').value;
 
             try {
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ phone, password })
