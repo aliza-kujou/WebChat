@@ -117,6 +117,8 @@
     </div>
 
     <script>
+        const WS_BASE_URL = 'ws://TU_IP_DEL_VPS:8080';
+
         const token = localStorage.getItem('kazuma_token');
         const miJid = localStorage.getItem('kazuma_jid');
         
@@ -127,8 +129,7 @@
         const chatHistories = {}; 
 
         function connectWebSocket() {
-            const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
-            socket = new WebSocket(`${proto}://${window.location.host}`);
+            socket = new WebSocket(WS_BASE_URL);
 
             socket.onopen = () => {
                 socket.send(JSON.stringify({ type: 'auth', token: token }));
