@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kazuma Chat Messenger</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div id="login-screen" class="screen active">
+        <div class="login-container">
+            <div class="login-brand">
+                <div class="logo"><i class="fas fa-terminal"></i></div>
+                <h1>Kazuma Chat</h1>
+                <p>Infraestructura de Mensajeria Privada</p>
+            </div>
+            <div class="login-tabs">
+                <button id="tab-login" class="tab-btn active" onclick="switchTab('login')">Ingresar</button>
+                <button id="tab-register" class="tab-btn" onclick="switchTab('register')">Obtener Numero</button>
+            </div>
+            <div class="login-form">
+                <div id="form-login-fields">
+                    <div class="input-group">
+                        <label>Numero Virtual</label>
+                        <input type="tel" id="login-phone" placeholder="+1839XXXXXXX" autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <label>Contraseña</label>
+                        <input type="password" id="login-password" placeholder="••••••••">
+                    </div>
+                    <button class="btn-primary" onclick="procesarLogin()">
+                        <i class="fas fa-sign-in-alt"></i> Entrar al Sistema
+                    </button>
+                </div>
+                <div id="form-register-fields" style="display:none">
+                    <div class="input-group">
+                        <label>Pais de Origen</label>
+                        <select id="reg-pais">
+                            <option value="RD">República Dominicana (+1)</option>
+                            <option value="CU">Cuba (+53)</option>
+                            <option value="US">Estados Unidos (+1)</option>
+                            <option value="CA">Canadá (+1)</option>
+                            <option value="MX">México (+52)</option>
+                            <option value="AR">Argentina (+54)</option>
+                            <option value="BR">Brasil (+55)</option>
+                            <option value="CO">Colombia (+57)</option>
+                            <option value="CL">Chile (+56)</option>
+                            <option value="PE">Perú (+51)</option>
+                            <option value="VE">Venezuela (+58)</option>
+                            <option value="EC">Ecuador (+593)</option>
+                            <option value="GT">Guatemala (+502)</option>
+                            <option value="BO">Bolivia (+591)</option>
+                            <option value="HN">Honduras (+504)</option>
+                            <option value="PY">Paraguay (+595)</option>
+                            <option value="SV">El Salvador (+503)</option>
+                            <option value="NI">Nicaragua (+505)</option>
+                            <option value="CR">Costa Rica (+506)</option>
+                            <option value="PA">Panamá (+507)</option>
+                            <option value="UY">Uruguay (+598)</option>
+                            <option value="JM">Jamaica (+1876)</option>
+                            <option value="PR">Puerto Rico (+1)</option>
+                            <option value="BS">Bahamas (+1242)</option>
+                            <option value="BB">Barbados (+1246)</option>
+                            <option value="BZ">Belice (+501)</option>
+                            <option value="GY">Guyana (+592)</option>
+                            <option value="SR">Surinam (+597)</option>
+                            <option value="TT">Trinidad y Tobago (+1868)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Alias de Usuario</label>
+                        <input type="text" id="reg-alias" placeholder="Ej: SysSec" autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <label>Contraseña del Nodo</label>
+                        <input type="password" id="reg-password" placeholder="Crea una contraseña segura">
+                    </div>
+                    <button class="btn-primary" onclick="procesarRegistro()">
+                        <i class="fas fa-key"></i> Generar Cuenta Virtual
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-screen" class="screen">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="user-avatar"><i class="fas fa-shield-alt"></i></div>
+                <div class="user-info">
+                    <h3 id="user-name">Cargando...</h3>
+                    <span class="status online"><span class="status-dot"></span> Nodo Activo</span>
+                </div>
+                <button class="btn-icon" onclick="toggleSettings()"><i class="fas fa-sliders-h"></i></button>
+            </div>
+            <div class="add-contact-section">
+                <button class="btn-add-contact" onclick="openAddContact()">
+                    <i class="fas fa-user-plus"></i> Enlazar Destinatario
+                </button>
+            </div>
+            <div class="chat-filters">
+                <button class="filter-btn active" data-filter="all" onclick="filterChats('all')"><i class="fas fa-terminal"></i><span>Canales</span></button>
+                <button class="filter-btn" data-filter="private" onclick="filterChats('private')"><i class="fas fa-user-secret"></i><span>Privados</span></button>
+                <button class="filter-btn" data-filter="groups" onclick="filterChats('groups')"><i class="fas fa-network-wired"></i><span>Grupos</span></button>
+            </div>
+            <div class="chats-list" id="chats-list"></div>
+        </aside>
+        <main class="chat-area">
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <div class="chat-avatar"><i class="fas fa-code-branch"></i></div>
+                    <div class="chat-header-text">
+                        <h3 id="current-chat-name">Terminal en espera</h3>
+                        <span id="current-chat-status"></span>
+                    </div>
+                </div>
+                <div class="chat-header-actions">
+                    <button class="btn-icon" onclick="toggleChatMenu()"><i class="fas fa-ellipsis-v"></i></button>
+                </div>
+            </div>
+            <div class="messages-container" id="messages-container">
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h2>Kazuma Encrypted Network</h2>
+                    <p>Selecciona una sesion para abrir el flujo de datos</p>
+                </div>
+            </div>
+            <div class="message-input-area">
+                <div class="more-options-container">
+                    <button class="btn-more" onclick="toggleMoreOptions()"><i class="fas fa-plus"></i></button>
+                    <div class="more-options-menu" id="more-options-menu">
+                        <button class="option-btn" onclick="selectFileType('image')"><div class="option-icon image"><i class="fas fa-image"></i></div><span>Imagen</span></button>
+                        <button class="option-btn" onclick="selectFileType('video')"><div class="option-icon video"><i class="fas fa-video"></i></div><span>Video</span></button>
+                        <button class="option-btn" onclick="selectFileType('document')"><div class="option-icon document"><i class="fas fa-file-code"></i></div><span>Payload</span></button>
+                        <button class="option-btn" onclick="selectFileType('audio')"><div class="option-icon audio"><i class="fas fa-microphone"></i></div><span>Audio</span></button>
+                    </div>
+                </div>
+                <input type="file" id="file-input" style="display:none" onchange="handleFileSelect(event)">
+                <div class="input-wrapper">
+                    <input type="text" id="message-input" placeholder="Consola de entrada..." onkeydown="handleKeyDown(event)" autocomplete="off">
+                </div>
+                <button class="btn-send" onclick="sendMessage()"><i class="fas fa-terminal"></i></button>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="modal-add-contact">
+        <div class="modal">
+            <div class="modal-header"><h3><i class="fas fa-link"></i> Vincular Destinatario</h3><button class="btn-close" onclick="closeModal('modal-add-contact')"><i class="fas fa-times"></i></button></div>
+            <div class="modal-body">
+                <div class="input-group"><label>Alias de Destino</label><input type="text" id="contact-name" placeholder="Nombre"></div>
+                <div class="input-group"><label>JID o Numero Completo</label><input type="text" id="contact-phone" placeholder="+1839XXXXXXX"></div>
+            </div>
+            <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('modal-add-contact')">Abortar</button><button class="btn-primary" onclick="addContact()">Establecer</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-settings">
+        <div class="modal modal-large">
+            <div class="modal-header"><h3><i class="fas fa-sliders-h"></i> Panel de Configuracion</h3><button class="btn-close" onclick="closeModal('modal-settings')"><i class="fas fa-times"></i></button></div>
+            <div class="modal-body settings-body">
+                <div class="settings-section">
+                    <h4>Identidad Virtual</h4>
+                    <div class="profile-edit">
+                        <div class="profile-fields">
+                            <div class="input-group"><label>Nombre</label><input type="text" id="settings-alias"></div>
+                            <div class="input-group"><label>Bio del Nodo</label><input type="text" id="settings-bio"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h4>Multi-Dispositivo</h4>
+                    <div class="setting-item flex-column">
+                        <button class="btn-primary w-100 mb-2" onclick="solicitarCodigoVinculacion()">Generar Codigo Multi-Device</button>
+                        <div id="pair-code-display" class="pair-code-box" style="display:none">--------</div>
+                    </div>
+                    <div class="setting-item flex-column">
+                        <input type="text" id="pair-code-input" placeholder="Ingresa codigo de 8 digitos" class="mb-2 text-center">
+                        <button class="btn-secondary w-100" onclick="autorizarDispositivoVinculado()">Autorizar Terminal Remoto</button>
+                    </div>
+                </div>
+                <div class="settings-section"><h4>Seguridad</h4><div class="setting-item"><span>Desconectar Nodo</span><button class="btn-secondary" onclick="logout()">Destruir Sesion</button></div></div>
+            </div>
+            <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('modal-settings')">Cerrar</button><button class="btn-primary" onclick="saveSettings()">Aplicar</button></div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
