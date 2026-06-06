@@ -89,7 +89,6 @@
                     <option value="MX">México (+52)</option>
                     <option value="CO">Colombia (+57)</option>
                     <option value="AR">Argentina (+54)</option>
-                    <option value="ES">España (+34)</option>
                 </select>
             </div>
             <div class="form-group">
@@ -109,6 +108,8 @@
     </div>
 
     <script>
+        const API_BASE_URL = 'http://95.217.157.157:8080';
+
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const pais = document.getElementById('pais').value;
@@ -116,7 +117,7 @@
             const password = document.getElementById('password').value;
 
             try {
-                const response = await fetch('/api/auth/register', {
+                const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pais, alias, password })
