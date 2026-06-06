@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kazuma | Mensajería</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --neon-blue: #3b82f6; 
+            --dark-bg: #0d0e12; 
+            --card-bg: #16171f; 
+            --sidebar-bg: #101118; 
+            --text-main: #f3f4f6; 
+            --text-muted: #9ca3af; 
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        body { 
+            background-color: var(--dark-bg); 
+            color: var(--text-main); 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            margin: 0; padding: 0;
+            display: flex; height: 100vh; overflow: hidden; 
+        }
+        .layout { display: flex; width: 100%; height: 100%; }
+        
+        .sidebar { 
+            width: 320px; min-width: 320px; background: var(--sidebar-bg); 
+            border-right: 1px solid rgba(255, 255, 255, 0.04); 
+            display: flex; flex-direction: column; 
+        }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); display: flex; justify-content: space-between; align-items: center; }
+        .brand { font-weight: 800; font-size: 1.2rem; letter-spacing: -0.5px; }
+        .brand span { color: var(--neon-blue); }
+        .logout-btn { color: #ef4444; cursor: pointer; font-size: 1.1rem; background: none; border: none; }
+        
+        .search-container { padding: 12px 16px; }
+        .search-box { 
+            width: 100%; box-sizing: border-box; background: var(--card-bg); 
+            border: 1px solid rgba(255, 255, 255, 0.03); padding: 10px 14px; 
+            border-radius: 10px; color: var(--text-main); font-family: inherit; font-size: 0.85rem;
+        }
+        .search-box:focus { outline: none; border-color: var(--neon-blue); }
+
+        .chat-list { flex-grow: 1; overflow-y: auto; padding: 0 8px; }
+        .chat-item { 
+            display: flex; align-items: center; gap: 12px; padding: 12px; 
+            border-radius: 12px; cursor: pointer; transition: var(--transition); margin-bottom: 4px;
+        }
+        .chat-item:hover, .chat-item.active { background: rgba(255, 255, 255, 0.03); }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--card-bg); border: 2px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: center; color: var(--neon-blue); font-weight: 700; }
+        .chat-info { flex-grow: 1; min-width: 0; }
+        .chat-name { font-size: 0.9rem; font-weight: 600; margin: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+        .chat-preview { font-size: 0.75rem; color: var(--text-muted); margin: 2px 0 0 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+
+        .main-chat { flex-grow: 1; background: var(--dark-bg); display: flex; flex-direction: column; position: relative; }
+        .chat-header { 
+            padding: 15px 20px; background: rgba(22, 23, 31, 0.7); backdrop-filter: blur(12px); 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04); display: flex; align-items: center; gap: 12px; 
+        }
+        .messages-container { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        
+        .msg-bubble { max-width: 60%; padding: 10px 14px; border-radius: 16px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; }
+        .msg-bubble.incoming { background: var(--card-bg); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.02); }
+        .msg-bubble.outgoing { background: var(--neon-blue); color: #ffffff; align-self: flex-end; border-bottom-right-radius: 4px; }
+        
+        .chat-input-area { padding: 15px 20px; background: var(--sidebar-bg); border-top: 1px solid rgba(255, 255, 255, 0.04); display: flex; gap: 12px; align-items: center; }
+        .chat-input { flex-grow: 1; background: var(--dark-bg); border: 1px solid rgba(255, 255, 255, 0.04); padding: 12px 16px; border-radius: 12px; color: var(--text-main); font-family: inherit; font-size: 0.9rem; }
+        .chat-input:focus { outline: none; border-color: var(--neon-blue); }
+        .btn-send { background: var(--neon-blue); border: none; color: white; width: 42px; height: 42px; border-radius: 12px; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; }
+        .btn-send:hover { opacity: 0.9; }
+
+        .no-chat-selected { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); text-align: center; }
+        .no-chat-selected i { font-size: 3rem; color: rgba(59, 130, 246, 0.2); margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="layout">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">KAZUMA <span>CHAT</span></div>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-power-off"></i></button>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" id="newChatInput" class="search-box" placeholder="Ingresar JID para chatear + Enter...">
+            </div>
+
+            <div class="chat-list" id="chatList"></div>
+        </div>
+
+        <div class="main-chat">
+            <div id="noChatSelected" class="no-chat-selected">
+                <i class="fas fa-comments"></i>
+                <p style="font-weight: 600; font-size: 0.95rem; margin: 0;">Selecciona o abre una conversación</p>
+                <p style="font-size: 0.8rem; margin-top: 4px; opacity:0.7;">Tus chats aparecerán en la barra lateral.</p>
+            </div>
+
+            <div class="chat-header">
+                <div class="avatar" id="currentChatAvatar">?</div>
+                <div>
+                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700;" id="currentChatTitle">Selecciona un chat</h4>
+                    <span style="font-size: 0.75rem; color: var(--neon-blue);" id="currentChatSub">Offline</span>
+                </div>
+            </div>
+
+            <div class="messages-container" id="messagesContainer"></div>
+
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" class="chat-input" placeholder="Escribe un mensaje aquí...">
+                <button class="btn-send" id="btnSend"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('kazuma_token');
+        const miJid = localStorage.getItem('kazuma_jid');
+        
+        if (!token || !miJid) window.location.href = 'login.html';
+
+        let socket;
+        let activeChatJid = null;
+        const chatHistories = {}; 
+
+        function connectWebSocket() {
+            const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
+            socket = new WebSocket(`${proto}://${window.location.host}`);
+
+            socket.onopen = () => {
+                socket.send(JSON.stringify({ type: 'auth', token: token }));
+            };
+
+            socket.onmessage = (event) => {
+                try {
+                    const packet = JSON.parse(event.data);
+
+                    if (packet.type === 'status' && packet.status === 'connected') {
+                        console.log('Autenticado en WebSocket como ' + packet.jid);
+                        return;
+                    }
+
+                    if (packet.type === 'message' && packet.from && packet.body) {
+                        const remitente = packet.from;
+                        if (!chatHistories[remitente]) chatHistories[remitente] = [];
+                        chatHistories[remitente].push({ incoming: true, body: packet.body });
+
+                        renderChatList();
+                        if (activeChatJid === remitente) {
+                            renderMessages();
+                        }
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            };
+
+            socket.onclose = () => {
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+
+        function renderChatList() {
+            const list = document.getElementById('chatList');
+            list.innerHTML = '';
+            
+            Object.keys(chatHistories).forEach(jid => {
+                const history = chatHistories[jid];
+                const lastMsg = history[history.length - 1]?.body || '';
+                const shortJid = jid.split('@')[0];
+                const activeClass = jid === activeChatJid ? 'active' : '';
+
+                list.innerHTML += `
+                    <div class="chat-item ${activeClass}" onclick="selectChat('${jid}')">
+                        <div class="avatar">${shortJid.substring(0,2).toUpperCase()}</div>
+                        <div class="chat-info">
+                            <h5 class="chat-name">${shortJid}</h5>
+                            <p class="chat-preview">${lastMsg}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function selectChat(jid) {
+            activeChatJid = jid;
+            document.getElementById('noChatSelected').style.display = 'none';
+            document.getElementById('currentChatTitle').innerText = jid.split('@')[0];
+            document.getElementById('currentChatSub').innerText = 'Conectado de forma segura';
+            document.getElementById('currentChatAvatar').innerText = jid.substring(0,2).toUpperCase();
+            
+            renderChatList();
+            renderMessages();
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '';
+            
+            if (!chatHistories[activeChatJid]) return;
+
+            chatHistories[activeChatJid].forEach(msg => {
+                const typeClass = msg.incoming ? 'incoming' : 'outgoing';
+                container.innerHTML += `
+                    <div class="msg-bubble ${typeClass}">${msg.body}</div>
+                `;
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const body = input.value.trim();
+            if (!body || !activeChatJid) return;
+
+            const packet = {
+                type: 'message',
+                to: activeChatJid,
+                body: body
+            };
+
+            socket.send(JSON.stringify(packet));
+
+            if (!chatHistories[activeChatJid]) chatHistories[activeChatJid] = [];
+            chatHistories[activeChatJid].push({ incoming: false, body: body });
+
+            input.value = '';
+            renderChatList();
+            renderMessages();
+        }
+
+        document.getElementById('newChatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                let targetJid = e.target.value.trim();
+                if (!targetJid) return;
+                if (!targetJid.includes('@')) targetJid += '@chat.kazuma.app';
+
+                if (!chatHistories[targetJid]) {
+                    chatHistories[targetJid] = [];
+                }
+                e.target.value = '';
+                selectChat(targetJid);
+            }
+        });
+
+        document.getElementById('btnSend').addEventListener('click', sendMessage);
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        connectWebSocket();
+    </script>
+</body>
+</html>
