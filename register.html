@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kazuma | Registro</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --neon-blue: #3b82f6; 
+            --dark-bg: #0d0e12; 
+            --card-bg: #16171f; 
+            --text-main: #f3f4f6; 
+            --text-muted: #9ca3af; 
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        body { 
+            background-color: var(--dark-bg); 
+            color: var(--text-main); 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            margin: 0; 
+            padding: 0;
+            display: flex; 
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh; 
+        }
+        .auth-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 24px;
+            padding: 35px 25px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        .brand { font-weight: 800; font-size: 1.6rem; letter-spacing: -0.5px; margin-bottom: 5px; }
+        .brand span { color: var(--neon-blue); }
+        .subtitle { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 25px; }
+        .form-group { text-align: left; margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; color: var(--text-muted); letter-spacing: 0.5px; }
+        .form-control {
+            width: 100%;
+            box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 12px 14px;
+            border-radius: 12px;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+        .form-control:focus { outline: none; border-color: var(--neon-blue); background: rgba(0, 0, 0, 0.3); }
+        .btn-submit {
+            width: 100%;
+            background: var(--neon-blue);
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 10px;
+        }
+        .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+        .auth-footer { margin-top: 20px; font-size: 0.85rem; color: var(--text-muted); }
+        .auth-footer a { color: var(--neon-blue); text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <div class="brand">KAZUMA <span>CHAT</span></div>
+        <div class="subtitle">Regístrate para obtener tu número virtual</div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label>País de Origen</label>
+                <select id="pais" class="form-control" required>
+                    <option value="RD">República Dominicana (+1)</option>
+                    <option value="CU">Cuba (+53)</option>
+                    <option value="US">Estados Unidos (+1)</option>
+                    <option value="MX">México (+52)</option>
+                    <option value="CO">Colombia (+57)</option>
+                    <option value="AR">Argentina (+54)</option>
+                    <option value="ES">España (+34)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Alias / Nombre</label>
+                <input type="text" id="alias" class="form-control" placeholder="Ej. Kazuma Satou" required>
+            </div>
+            <div class="form-group">
+                <label>Contraseña</label>
+                <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-submit">Generar Cuenta</button>
+        </form>
+
+        <div class="auth-footer">
+            ¿Ya tienes cuenta? <a href="login.html">Inicia Sesión</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pais = document.getElementById('pais').value;
+            const alias = document.getElementById('alias').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pais, alias, password })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Cuenta Generada',
+                        text: `Tu número asignado es: ${data.phone}`,
+                        background: 'var(--card-bg)',
+                        color: 'var(--text-main)',
+                        confirmButtonColor: 'var(--neon-blue)'
+                    }).then(() => {
+                        localStorage.setItem('kazuma_token', data.token);
+                        localStorage.setItem('kazuma_jid', data.jid);
+                        localStorage.setItem('kazuma_phone', data.phone);
+                        window.location.href = 'home.html';
+                    });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: data.error, background: 'var(--card-bg)', color: 'var(--text-main)' });
+                }
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'Error de Red', text: 'No se pudo conectar al servidor.', background: 'var(--card-bg)', color: 'var(--text-main)' });
+            }
+        });
+    </script>
+</body>
+</html>
