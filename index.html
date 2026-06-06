@@ -3,268 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kazuma Chat</title>
+    <title>ToDus Web Messenger</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
 
-    <!-- 1. PANTALLA DE BIENVENIDA (INTRO) -->
+    <!-- PANTALLA 1: BIENVENIDA (ESTILO TODUS REAl) -->
     <div id="intro-screen" class="screen active">
         <div class="intro-container">
             <div class="intro-illustration">
-                <div class="brand-circle-logo">
+                <!-- Aquí puedes meter la imagen de los personajes luego -->
+                <div class="todus-logo-placeholder">
                     <i class="fas fa-comments"></i>
                 </div>
             </div>
             <div class="intro-text">
                 <h1>Bienvenidos</h1>
-                <p>Estás a punto de iniciar Kazuma Chat, una aplicación de mensajería pensada para ti.</p>
+                <p>Estás a punto de iniciar toDus, una aplicación de mensajería pensada para ti.</p>
             </div>
             <div class="intro-dots">
                 <span class="dot active"></span>
                 <span class="dot"></span>
                 <span class="dot"></span>
+                <span class="dot"></span>
             </div>
             <div class="intro-actions">
-                <button class="btn-nav btn-disabled" disabled>Atrás</button>
-                <button class="btn-nav btn-next" onclick="advanceToIntroLogin()">Siguiente</button>
+                <button class="btn-intro-back" disabled>Atrás</button>
+                <button class="btn-intro-next" onclick="goToLogin()">siguiente</button>
             </div>
         </div>
     </div>
 
-    <!-- 2. PANTALLA DE AUTENTICACIÓN / REGISTRO (LOGIN) -->
+    <!-- PANTALLA 2: LOGIN Y REGISTRO (MANTENE LAS FUNCIONES DEL BACKEND) -->
     <div id="login-screen" class="screen">
-        <div class="auth-container">
-            <div class="auth-brand">
-                <div class="auth-logo"><i class="fas fa-comments"></i></div>
-                <h2>Bienvenidos a Kazuma</h2>
-            </div>
-            
-            <div class="auth-tabs">
-                <button id="tab-login" class="auth-tab-btn active" onclick="switchAuthTab('login')">Ingresar</button>
-                <button id="tab-register" class="auth-tab-btn" onclick="switchAuthTab('register')">Obtener Número</button>
+        <div class="login-container">
+            <div class="login-brand">
+                <div class="logo"><i class="fas fa-comments"></i></div>
+                <h1>Bienvenidos a toDus</h1>
             </div>
 
-            <!-- Formulario de Entrada (Login) -->
-            <div id="form-login-fields" class="auth-form">
-                <p class="form-instruction">Ingresa tus credenciales de acceso</p>
-                <div class="input-field-group">
-                    <label for="login-phone">Número Virtual</label>
-                    <div class="input-wrapper-icon">
-                        <i class="fas fa-hashtag"></i>
-                        <input type="tel" id="login-phone" placeholder="Ej. 50012345" autocomplete="off">
-                    </div>
-                </div>
-                <div class="input-field-group">
-                    <label for="login-password">Contraseña</label>
-                    <div class="input-wrapper-icon">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="login-password" placeholder="••••••••">
-                    </div>
-                </div>
-                <button class="btn-auth-submit" onclick="procesarLogin()">
-                    <i class="fas fa-sign-in-alt"></i> Acceder a la Red
-                </button>
+            <!-- Selector para alternar si eres nuevo o ya tienes cuenta -->
+            <div class="auth-modes">
+                <button id="mode-login-btn" class="mode-btn active" onclick="toggleAuthMode('login')">Ingresar</button>
+                <button id="mode-register-btn" class="mode-btn" onclick="toggleAuthMode('register')">Soy Nuevo</button>
             </div>
 
-            <!-- Formulario de Registro (Obtener Número) -->
-            <div id="form-register-fields" class="auth-form" style="display:none">
-                <p class="form-instruction">¿Eres nuevo? El servidor generará un identificador para ti</p>
-                <div class="input-field-group">
-                    <label for="reg-alias">Tu Alias / Nombre</label>
-                    <div class="input-wrapper-icon">
-                        <i class="fas fa-user"></i>
-                        <input type="text" id="reg-alias" placeholder="Ej. Felix" autocomplete="off">
+            <div class="login-form">
+                <!-- FORMULARIO LOGIN ESTÁNDAR -->
+                <div id="step-phone">
+                    <p class="form-instruction">Ingresa tu número de teléfono</p>
+                    <div class="input-group">
+                        <span class="prefix">+53</span>
+                        <input type="tel" id="phone-input" placeholder="XXXXXXXX" maxlength="8" autocomplete="off">
                     </div>
-                </div>
-                <div class="input-field-group">
-                    <label for="reg-pais">Prefijo de Región</label>
-                    <div class="input-wrapper-icon">
-                        <i class="fas fa-globe"></i>
-                        <select id="reg-pais">
-                            <option value="53">Cuba (+53)</option>
-                            <option value="1">Dominicana / USA (+1)</option>
-                            <option value="57">Colombia (+57)</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="input-field-group">
-                    <label for="reg-password">Asigna una Contraseña</label>
-                    <div class="input-wrapper-icon">
-                        <i class="fas fa-key"></i>
-                        <input type="password" id="reg-password" placeholder="Crea una clave segura">
-                    </div>
-                </div>
-                <button class="btn-auth-submit" onclick="procesarRegistro()">
-                    <i class="fas fa-user-plus"></i> Registrarme y Generar Número
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. APLICACIÓN PRINCIPAL (BANDEJA DE ENTRADA Y CHATS) -->
-    <div id="app-screen" class="screen">
-        <!-- El contenedor principal se maneja como una sola vista responsiva en móviles -->
-        <div class="phone-layout-container">
-            
-            <!-- VISTA A: LISTADO DE CHATS (SIDEBAR / BANDEJA) -->
-            <section id="pane-sidebar" class="view-pane active">
-                <header class="app-main-header">
-                    <div class="user-profile-summary">
-                        <div class="user-avatar-circle"><i class="fas fa-user"></i></div>
-                        <div class="user-meta-data">
-                            <h3 id="user-name">Usuario</h3>
-                            <span class="network-status"><span class="indicator-dot"></span> En línea</span>
-                        </div>
-                    </div>
-                    <button class="btn-action-header" onclick="toggleSettings()"><i class="fas fa-sliders-h"></i></button>
-                </header>
-
-                <div class="action-bar-add">
-                    <button class="btn-trigger-add" onclick="openAddContact()">
-                        <i class="fas fa-plus-circle"></i> Agregar Nuevo Contacto
+                    <button class="btn-primary" onclick="requestCode()">
+                        <i class="fas fa-paper-plane"></i> Solicitar Código
                     </button>
                 </div>
 
-                <nav class="navigation-filters">
-                    <button class="filter-tab active" data-filter="all" onclick="filterChats('all')">Todos</button>
-                    <button class="filter-tab" data-filter="private" onclick="filterChats('private')">Privados</button>
-                    <button class="filter-tab" data-filter="groups" onclick="filterChats('groups')">Grupos</button>
-                </nav>
-
-                <div class="chats-scroll-list" id="chats-list"></div>
-            </section>
-
-            <!-- VISTA B: AREA DE LA CONVERSACIÓN ACTIVA -->
-            <section id="pane-chat-area" class="view-pane">
-                <header class="chat-conversation-header">
-                    <button class="btn-back-to-list" onclick="backToChannelsList()"><i class="fas fa-arrow-left"></i></button>
-                    <div class="active-chat-details">
-                        <div class="active-avatar"><i class="fas fa-comments"></i></div>
-                        <div class="active-text-info">
-                            <h3 id="current-chat-name">Selecciona un chat</h3>
-                            <span id="current-chat-status"></span>
-                        </div>
+                <!-- FORMULARIO REGISTRO (TU SOLICITUD DE NUEVO NÚMERO) -->
+                <div id="step-register" style="display:none">
+                    <p class="form-instruction">El servidor te asignará un número automáticamente</p>
+                    <div class="input-group-vertical">
+                        <label>Tu Nombre / Alias</label>
+                        <input type="text" id="register-alias" placeholder="Ej. Felix" autocomplete="off">
                     </div>
-                    <button class="btn-action-header" onclick="toggleChatMenu()"><i class="fas fa-ellipsis-v"></i></button>
-                </header>
-
-                <div class="messages-flow-container" id="messages-container">
-                    <div class="empty-state-view">
-                        <i class="far fa-paper-plane"></i>
-                        <h2>Bandeja de Entrada limpia</h2>
-                        <p>Selecciona una transmisión para ver los mensajes.</p>
-                    </div>
+                    <button class="btn-primary" onclick="requestNewNumber()">
+                        <i class="fas fa-user-plus"></i> Registrar y Obtener Número
+                    </button>
                 </div>
 
-                <footer class="chat-input-footer-area">
-                    <div class="attachment-trigger-wrapper">
-                        <button class="btn-attach" onclick="toggleMoreOptions()"><i class="fas fa-paperclip"></i></button>
-                        <div class="attachment-dropdown-menu" id="more-options-menu">
-                            <button class="drop-item" onclick="selectFileType('image')"><i class="fas fa-image"></i> Imagen</button>
-                            <button class="drop-item" onclick="selectFileType('video')"><i class="fas fa-video"></i> Video</button>
-                            <button class="drop-item" onclick="selectFileType('document')"><i class="fas fa-file-medical"></i> Archivo</button>
-                            <button class="drop-item" onclick="selectFileType('audio')"><i class="fas fa-microphone"></i> Audio</button>
-                        </div>
+                <!-- VERIFICACIÓN SMS -->
+                <div id="step-code" style="display:none">
+                    <h2>Verificación</h2>
+                    <p>Ingresa el código SMS de 6 dígitos</p>
+                    <div class="code-inputs">
+                        <input type="text" maxlength="1" class="code-digit" data-index="0">
+                        <input type="text" maxlength="1" class="code-digit" data-index="1">
+                        <input type="text" maxlength="1" class="code-digit" data-index="2">
+                        <input type="text" maxlength="1" class="code-digit" data-index="3">
+                        <input type="text" maxlength="1" class="code-digit" data-index="4">
+                        <input type="text" maxlength="1" class="code-digit" data-index="5">
                     </div>
-                    <input type="file" id="file-input" style="display:none" onchange="handleFileSelect(event)">
-                    <div class="text-input-field-container">
-                        <input type="text" id="message-input" placeholder="Escribe un mensaje..." onkeydown="handleKeyDown(event)" autocomplete="off">
-                    </div>
-                    <button class="btn-send-message" onclick="sendMessage()"><i class="fas fa-arrow-up"></i></button>
-                </footer>
-            </section>
-
+                    <button class="btn-primary" onclick="validateAndLogin()">
+                        <i class="fas fa-check"></i> Verificar e Iniciar
+                    </button>
+                    <button class="btn-text" onclick="backToPhone()">
+                        <i class="fas fa-arrow-left"></i> Cambiar número
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- MODAL: AGREGAR CONTACTO -->
+    <!-- PANTALLA 3: APP PRINCIPAL (BANDEJA DE ENTRADA) -->
+    <div id="app-screen" class="screen">
+        <aside class="sidebar" id="sidebar-pane">
+            <div class="sidebar-header">
+                <div class="user-avatar"><i class="fas fa-user"></i></div>
+                <div class="user-info">
+                    <h3 id="user-name">Usuario</h3>
+                    <span class="status online"><span class="status-dot"></span> En línea</span>
+                </div>
+                <button class="btn-icon" onclick="toggleSettings()"><i class="fas fa-cog"></i></button>
+            </div>
+            <div class="add-contact-section">
+                <button class="btn-add-contact" onclick="openAddContact()">
+                    <i class="fas fa-plus"></i> Agregar Contacto
+                </button>
+            </div>
+            <div class="chat-filters">
+                <button class="filter-btn active" data-filter="all" onclick="filterChats('all')">Todos</button>
+                <button class="filter-btn" data-filter="private" onclick="filterChats('private')">Privados</button>
+                <button class="filter-btn" data-filter="groups" onclick="filterChats('groups')">Grupos</button>
+            </div>
+            <div class="chats-list" id="chats-list"></div>
+        </aside>
+
+        <main class="chat-area" id="chat-pane">
+            <div class="chat-header">
+                <button class="btn-back-sidebar" onclick="showSidebar()"><i class="fas fa-arrow-left"></i></button>
+                <div class="chat-header-info">
+                    <div class="chat-avatar"><i class="fas fa-user"></i></div>
+                    <div class="chat-header-text">
+                        <h3 id="current-chat-name">Selecciona un chat</h3>
+                        <span id="current-chat-status"></span>
+                    </div>
+                </div>
+                <div class="chat-header-actions">
+                    <button class="btn-icon" onclick="toggleChatMenu()"><i class="fas fa-ellipsis-v"></i></button>
+                </div>
+            </div>
+            <div class="messages-container" id="messages-container">
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-comments"></i></div>
+                    <h2>Bienvenido a ToDus Web</h2>
+                    <p>Selecciona un chat para comenzar</p>
+                </div>
+            </div>
+            <div class="message-input-area">
+                <div class="more-options-container">
+                    <button class="btn-more" onclick="toggleMoreOptions()"><i class="fas fa-plus"></i></button>
+                    <div class="more-options-menu" id="more-options-menu">
+                        <button class="option-btn" onclick="selectFileType('image')"><i class="fas fa-image"></i><span>Imagen</span></button>
+                        <button class="option-btn" onclick="selectFileType('video')"><i class="fas fa-video"></i><span>Video</span></button>
+                        <button class="option-btn" onclick="selectFileType('document')"><i class="fas fa-file-alt"></i><span>Documento</span></button>
+                        <button class="option-btn" onclick="selectFileType('audio')"><i class="fas fa-music"></i><span>Audio</span></button>
+                    </div>
+                </div>
+                <input type="file" id="file-input" style="display:none" onchange="handleFileSelect(event)">
+                <div class="input-wrapper">
+                    <input type="text" id="message-input" placeholder="Escribe un mensaje..." onkeydown="handleKeyDown(event)" autocomplete="off">
+                </div>
+                <button class="btn-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODALES DE CONFIGURACIÓN -->
     <div class="modal-overlay" id="modal-add-contact">
-        <div class="modal-card">
-            <div class="modal-card-header">
-                <h3>Vincular Terminal</h3>
-                <button class="btn-modal-close" onclick="closeModal('modal-add-contact')"><i class="fas fa-times"></i></button>
+        <div class="modal">
+            <div class="modal-header"><h3><i class="fas fa-user-plus"></i> Agregar Contacto</h3><button class="btn-close" onclick="closeModal('modal-add-contact')"><i class="fas fa-times"></i></button></div>
+            <div class="modal-body">
+                <div class="input-group-modal"><label>Nombre</label><input type="text" id="contact-name" placeholder="Nombre del contacto"></div>
+                <div class="input-group-modal"><label>Número</label><div class="input-with-prefix"><span>+53</span><input type="tel" id="contact-phone" placeholder="XXXXXXXX" maxlength="8"></div></div>
             </div>
-            <div class="modal-card-body">
-                <div class="form-group-modal">
-                    <label>Nombre / Identificador</label>
-                    <input type="text" id="contact-name" placeholder="Ej. Dinanyiris">
-                </div>
-                <div class="form-group-modal">
-                    <label>Número de Cuenta</label>
-                    <input type="tel" id="contact-phone" placeholder="Ej. 500xxxxx">
-                </div>
-            </div>
-            <div class="modal-card-footer">
-                <button class="btn-modal-cancel" onclick="closeModal('modal-add-contact')">Cancelar</button>
-                <button class="btn-modal-confirm" onclick="addContact()">Guardar Destinatario</button>
-            </div>
+            <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('modal-add-contact')">Cancelar</button><button class="btn-primary" onclick="addContact()">Guardar</button></div>
         </div>
     </div>
 
-    <!-- MODAL: AJUSTES -->
     <div class="modal-overlay" id="modal-settings">
-        <div class="modal-card">
-            <div class="modal-card-header">
-                <h3>Configuración de Cuenta</h3>
-                <button class="btn-modal-close" onclick="closeModal('modal-settings')"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-card-body">
-                <div class="settings-avatar-row">
-                    <div class="big-avatar"><i class="fas fa-user-circle"></i></div>
-                    <div class="fields-row-wrap">
-                        <div class="form-group-modal">
-                            <label>Alias público</label>
-                            <input type="text" id="settings-alias" placeholder="Tu alias">
-                        </div>
-                        <div class="form-group-modal">
-                            <label>Estado / Bio</label>
-                            <input type="text" id="settings-bio" placeholder="Estado del sistema">
-                        </div>
-                    </div>
-                </div>
-                <hr class="modal-divider">
-                <div class="settings-action-row">
-                    <span>Destruir sesión actual</span>
-                    <button class="btn-danger-action" onclick="logout()">Cerrar Sesión</button>
-                </div>
-            </div>
-            <div class="modal-card-footer">
-                <button class="btn-modal-cancel" onclick="closeModal('modal-settings')">Cerrar</button>
-                <button class="btn-modal-confirm" onclick="saveSettings()">Guardar Ajustes</button>
+        <div class="modal">
+            <div class="modal-header"><h3><i class="fas fa-cog"></i> Ajustes</h3><button class="btn-close" onclick="closeModal('modal-settings')"><i class="fas fa-times"></i></button></div>
+            <div class="modal-body">
+                <div class="input-group-modal"><label>Nombre</label><input type="text" id="settings-alias" placeholder="Tu nombre"></div>
+                <div class="input-group-modal"><label>Estado</label><input type="text" id="settings-bio" placeholder="¿Qué estás pensando?"></div>
+                <button class="btn-danger" onclick="logout()">Cerrar sesión</button>
             </div>
         </div>
     </div>
 
     <div class="toast-container" id="toast-container"></div>
-    
+
+    <!-- LÓGICA DE NAVEGACIÓN VISUAL -->
     <script>
-        // Funciones específicas de navegación del flujo visual solicitado
-        function advanceToIntroLogin() {
+        function goToLogin() {
             document.getElementById('intro-screen').classList.remove('active');
             document.getElementById('login-screen').classList.add('active');
         }
-        function switchAuthTab(type) {
-            document.getElementById('tab-login').classList.toggle('active', type === 'login');
-            document.getElementById('tab-register').classList.toggle('active', type === 'register');
-            document.getElementById('form-login-fields').style.display = type === 'login' ? 'block' : 'none';
-            document.getElementById('form-register-fields').style.display = type === 'register' ? 'block' : 'none';
+
+        function toggleAuthMode(mode) {
+            const isLogin = mode === 'login';
+            document.getElementById('mode-login-btn').classList.toggle('active', isLogin);
+            document.getElementById('mode-register-btn').classList.toggle('active', !isLogin);
+            document.getElementById('step-phone').style.display = isLogin ? 'block' : 'none';
+            document.getElementById('step-register').style.display = isLogin ? 'none' : 'block';
         }
-        function backToChannelsList() {
-            document.getElementById('pane-chat-area').classList.remove('active');
-            document.getElementById('pane-sidebar').classList.add('active');
+
+        function showSidebar() {
+            document.getElementById('chat-pane').classList.remove('active-pane');
+            document.getElementById('sidebar-pane').classList.add('active-pane');
         }
-        // La función selectChat original ahora debe activar la vista del chat en teléfonos:
-        const originalSelectChat = window.selectChat;
-        window.selectChat = function(chat) {
-            if(window.innerWidth <= 768) {
-                document.getElementById('pane-sidebar').classList.remove('active');
-                document.getElementById('pane-chat-area').classList.add('active');
+
+        // Modificación limpia para el responsive táctil sin alterar el app.js de tu amigo
+        function checkResponsiveChatClick() {
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar-pane').classList.remove('active-pane');
+                document.getElementById('chat-pane').classList.add('active-pane');
             }
-            if(typeof originalSelectChat === 'function') originalSelectChat(chat);
-        };
+        }
+        document.getElementById('chats-list').addEventListener('click', checkResponsiveChatClick);
     </script>
     <script src="/static/js/app.js"></script>
 </body>
